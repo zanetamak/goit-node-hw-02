@@ -24,12 +24,12 @@ const idSchema = Joi.object({
     id: Joi.string().pattern(/[a-zA-Z0-9_-]/).required(),
 });
 
-const validate = (schema) => async (id) => {
-    try {
-        await schema.validateAsync(req.body);
-    } catch (err) {
-        return err;
+const validate = (schema) => (req, res, next) => {
+    const { error } = schema.validate(req.body);
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
     }
+    next();
 };
 
 module.exports = {

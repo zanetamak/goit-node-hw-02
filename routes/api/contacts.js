@@ -45,17 +45,23 @@ router.post('/', async (req, res, next) => {
 });
 
 router.delete('/:id', async (req, res, next) => {
-  const response = await validateId(req.params.id);
+  const validationError = await validateId(req.params.id);
+  if (validationError) {
+    return res
+      .status(400)
+      .json({ status: 'error', code: 400, message: validationError.details[0].message });
+  }
   try {
     const contact = await Contacts.removeContact(req.params.id);
     if (contact) {
       return res
         .status(200)
         .json({ status: 'success', code: 200, data: { contact } });
+    } else {
+      return res
+        .status(404)
+        .json({ status: 'error', code: 404, message: 'Not Found' });
     }
-    return res
-      .status(404)
-      .json({ status: 'error', code: 404, message: 'Not Found' });
   } catch (error) {
     next(error);
   }
@@ -67,30 +73,23 @@ router.put('/:id', async (req, res, next) => {
     const contactId = req.params.id;
     const { error } = updatedContactSchema.validate({ name, email, phone });
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^\d{10}$/;
-
-    if (!name || !email || !phone) {
-      return res.status(400).json({ message: 'missing fields in req.body' });
-    }
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'invalid email format' });
-    }
-    if (!phoneRegex.test(phone)) {
-      return res.status(400).json({ message: 'invalid phone number format' });
+      return res
+        .status(400)
+        .json({ message: error.details[0].message });
     }
     validateId(contactId);
+
     const updatedContact = await Contacts.updateContact(contactId, {
       name,
       email,
       phone,
     });
-
     if (!updatedContact) {
-      return res.status(404).json({ message: 'Not found' });
+      return res
+        .status(404)
+        .json({ message: 'Nie znaleziono' });
     }
+
     res.json({
       status: 'success',
       code: 200,
@@ -99,11 +98,9 @@ router.put('/:id', async (req, res, next) => {
       },
     });
   } catch (error) {
-
     next(error);
   }
 });
-
 
 router.patch('/:id', async (req, res, next) => {
   res.json({ message: 'template message' });

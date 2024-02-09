@@ -1,22 +1,8 @@
-const fs = require('fs/promises');
-const path = require('path');
-const crypto = require('crypto');
-
-const contactsStorage = path.join(__dirname, '../db/contacts.json');
+const { Contact } = require('../contacts.schema')
 
 const listContacts = async () => {
   try {
-    const data = await fs.readFile(contactsStorage, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
-};
-
-const saveContacts = async (contacts) => {
-  try {
-    await fs.writeFile(contactsStorage, JSON.stringify(contacts, null, 2), 'utf-8');
+    return await Contact.find();
   } catch (error) {
     console.error(error);
     throw error;
@@ -25,9 +11,7 @@ const saveContacts = async (contacts) => {
 
 const getContactById = async (contactId) => {
   try {
-    const contacts = await listContacts();
-    const contact = contacts.find(u => u.id == contactId);
-    return contact;
+    return await Contact.findById(contactId);
   } catch (error) {
     console.error(error);
     throw error;
@@ -36,15 +20,8 @@ const getContactById = async (contactId) => {
 
 const removeContact = async (contactId) => {
   try {
-    const contacts = await listContacts();
-    const index = contacts.findIndex((u) => u.id == contactId);
-
-    if (index > -1) {
-      contacts.splice(index, 1);
-      await saveContacts(contacts);
-      return true;
-    }
-    return false;
+    const result = await Contact.findByIdAndDelete(contactId);
+    return !!result;
   } catch (error) {
     console.error(error);
     throw error;
@@ -53,13 +30,7 @@ const removeContact = async (contactId) => {
 
 const addContact = async (body) => {
   try {
-    const contacts = await listContacts();
-    const newContact = {
-      id: crypto.randomUUID(),
-      ...body,
-    };
-    contacts.push(newContact);
-    await saveContacts(contacts);
+    const newContact = await Contact.create(body);
     return newContact;
   } catch (error) {
     console.error(error);
@@ -69,15 +40,25 @@ const addContact = async (body) => {
 
 const updateContact = async (contactId, body) => {
   try {
-    const contacts = await listContacts();
-    const index = contacts.findIndex(contact => contact.id === contactId);
-    if (index !== -1) {
-      contacts[index] = { ...contacts[index], ...body };
-      await saveContacts(contacts);
-      return contacts[index];
-    }
+    const updatedContact = await Contact.findByIdAndUpdate(
+      contactId,
+      { $set: body },
+      { new: true, runValidators: true }
+    );
+    return updatedContact;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
 
-    return null;
+const updateStatusContact = async (contactId, favorite) => {
+  try {
+    const update = { favorite };
+    const updatedContact = await Contact.findByIdAndUpdate(contactId, update, {
+      new: true,
+    });
+    return updatedContact;
   } catch (error) {
     console.error(error);
     throw error;
@@ -90,4 +71,5 @@ module.exports = {
   removeContact,
   addContact,
   updateContact,
+  updateStatusContact,
 };

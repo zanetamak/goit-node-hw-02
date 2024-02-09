@@ -8,12 +8,12 @@ const db = mongoose.connect(DB_URL, {
   useFindAndModify: false,
 });
 
-moongoose.connection.on
+mongoose.connection
   .then(() => {
-    app.listen(PORT, function () {
+    app.listen(DB_URL, function () {
       console.log(`Database connection successful`);
     });
   })
-  .catch(err =>
-    console.log(`Server not running. Error message: ${err.message}`),
-  );
+  .catch((err) => {
+    console.log(`Server not run. Error: ${err.message}`);
+  });

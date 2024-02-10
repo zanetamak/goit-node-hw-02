@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Contact = require('../../contacts.schema');
+const { updateStatusContact } = require('../../controllers/contacts')
 
 
 router.get('/', async (req, res, next) => {
@@ -63,7 +64,7 @@ router.put('/:id', async (req, res, next) => {
     );
 
     if (!updatedContact) {
-      return res.status(404).json({ message: 'Nie znaleziono' });
+      return res.status(404).json({ message: 'not found' });
     }
 
     res.json({

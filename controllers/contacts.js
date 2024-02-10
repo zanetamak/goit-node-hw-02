@@ -21,7 +21,7 @@ const getContactById = async (contactId) => {
 const removeContact = async (contactId) => {
   try {
     const result = await Contact.findByIdAndDelete(contactId);
-    return !!result;
+    return Boolean(result); 
   } catch (error) {
     console.error(error);
     throw error;

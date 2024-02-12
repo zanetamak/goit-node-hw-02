@@ -1,29 +1,30 @@
-const { Contact } = require('../contacts.schema')
+const { Contact } = require('../contacts.schema');
 
 const listContacts = async () => {
   try {
-    return await Contact.find();
+    const contacts = await Contact.find();
+    return contacts;
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error.message);
     throw error;
   }
 };
 
 const getContactById = async (contactId) => {
   try {
-    return await Contact.findById(contactId);
+    const detectedContact = await Contact.findOne({ _id: contactId });
+    return detectedContact;
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error.message);
     throw error;
   }
 };
-
 const removeContact = async (contactId) => {
   try {
-    const result = await Contact.findByIdAndDelete(contactId);
-    return Boolean(result); 
+    const removedContact = await Contact.findByIdAndDelete({ _id: contactId });
+    return removedContact;
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error.message);
     throw error;
   }
 };
@@ -33,7 +34,7 @@ const addContact = async (body) => {
     const newContact = await Contact.create(body);
     return newContact;
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error.message);
     throw error;
   }
 };
@@ -41,26 +42,27 @@ const addContact = async (body) => {
 const updateContact = async (contactId, body) => {
   try {
     const updatedContact = await Contact.findByIdAndUpdate(
-      contactId,
-      { $set: body },
+      { _id: contactId },
+      body,
       { new: true, runValidators: true }
     );
     return updatedContact;
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error.message);
     throw error;
   }
 };
 
-const updateStatusContact = async (contactId, favorite) => {
+const updateStatusContact = async (contactId, body) => {
   try {
-    const update = { favorite };
-    const updatedContact = await Contact.findByIdAndUpdate(contactId, update, {
-      new: true,
-    });
+    const updatedContact = await Contact.findByIdAndUpdate(
+      { _id: contactId },
+      { favorite: body.favorite },
+      { new: true }
+    );
     return updatedContact;
   } catch (error) {
-    console.error(error);
+    console.error('Error:', error.message);
     throw error;
   }
 };

@@ -1,109 +1,97 @@
 const express = require('express');
-const router = express.Router();
 const {
   listContacts,
   getContactById,
   removeContact,
   addContact,
   updateContact,
-  updateStatusContact } = require('../../controllers/contacts');
-const { contactSchema } = require('../api/validation');
+  updateStatusContact,
+} = require('../../controllers/contacts');
+
+const validate = require('../api/validation');
+
+const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
     const contacts = await listContacts();
-    res.json({ status: 'success', code: 200, data: { contacts } });
+    res.status(200).json({ status: 'success', code: 200, data: { contacts } });
   } catch (error) {
     next(error);
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:contactId', async (req, res, next) => {
   try {
-    const contact = await getContactById(req.params.id);
+    const { contactId } = req.params;
+    const contact = await getContactById(contactId);
     if (contact) {
       return res.status(200).json({ status: 'success', code: 200, data: { contact } });
-    }
-    return res.status(404).json({ status: 'error', code: 404, message: 'Not Found' });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post('/', async (req, res, next) => {
-  const { error } = contactSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message });
-  }
-
-  try {
-    const contact = await addContact(req.body);
-    res.status(201).json({ status: 'success', code: 201, data: { contact } });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.delete('/:id', async (req, res, next) => {
-  try {
-    const contactId = req.params.id;
-    const deletedContact = await removeContact(contactId);
-
-    if (deletedContact) {
-      return res.status(200).json({ status: 'success', code: 200, data: { deletedContact } });
     } else {
-      return res.status(404).json({ status: 'error', code: 404, message: 'Nie znaleziono' });
+      return res.status(404).json({ status: 'error', code: 404, message: 'Not found' });
     }
   } catch (error) {
     next(error);
   }
 });
 
-router.put('/:id', async (req, res, next) => {
-  const { error } = contactSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message });
-  }
-
+router.post('/', validate.contactValidator, async (req, res, next) => {
   try {
-    const contactId = req.params.id;
-    const updatedContact = await updateContact(contactId, req.body);
-
-    if (!updatedContact) {
-      return res.status(404).json({ message: 'Nie znaleziono' });
-    }
-
-    res.json({
-      status: 'success',
-      code: 200,
-      data: {
-        updatedContact,
-      },
-    });
+    const newContact = await addContact(req.body);
+    res.status(201).json({ status: 'success', code: 201, data: { newContact } });
   } catch (error) {
     next(error);
   }
 });
 
-router.patch('/:contactId', async (req, res, next) => {
+router.delete('/:contactId', async (req, res, next) => {
   try {
+    const { contactId } = req.params;
+    const contact = await removeContact(contactId);
+    if (contact) {
+      return res.status(200).json({ status: 'success', code: 200, message: 'Contact deleted' });
+    } else {
+      return res.status(404).json({ status: 'error', code: 404, message: 'Not found' });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/:contactId', validate.contactUpdateValidator, async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const contactToEdit = await updateContact(contactId, req.body);
+    if (contactToEdit) {
+      return res.json({
+        status: 'success',
+        code: 200,
+        data: { contactToEdit },
+        message: 'Contact has been updated successfully',
+      });
+    } else {
+      return res.json({ code: 404, message: 'Not found' });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch('/:contactId', validate.contactUpdateValidator, async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
     const { favorite } = req.body;
-    if (favorite === undefined) {
-      return res.status(400).json({ message: 'Brak pola "favorite"' });
+
+    if (!favorite) {
+      return res.status(400).json({ message: 'Missing field "favorite"' });
     }
-    const contactId = req.params.contactId;
+
     const updatedContact = await updateStatusContact(contactId, { favorite });
 
     if (!updatedContact) {
-      return res.status(404).json({ message: 'Nie znaleziono' });
+      return res.status(404).json({ status: 'error', code: 404, message: 'Not found' });
     }
-    res.status(200).json({
-      status: 'success',
-      code: 200,
-      data: {
-        updatedContact,
-      },
-    });
+    res.status(200).json({ status: 'success', code: 200, data: { updatedContact } });
   } catch (error) {
     next(error);
   }

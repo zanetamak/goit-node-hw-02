@@ -14,14 +14,24 @@ const baseContactSchema = {
   favorite: Joi.boolean(),
 };
 
-const contactValidator = Joi.object({
+const registrationSchema = Joi.object({
   ...baseContactSchema,
   name: baseContactSchema.name.required(),
   email: baseContactSchema.email.required(),
   phone: baseContactSchema.phone.required(),
+  password: Joi.string().min(8).required(),
 });
 
-const updateContact = Joi.object(baseContactSchema);
+const loginSchema = Joi.object({
+  email: Joi.string().email({
+    minDomainSegments: 2,
+    tlds: ['com', 'pl', 'net'],
+  }).required(),
+  password: Joi.string().min(8).required(),
+});
+
+
+const updateContactSchema = Joi.object(baseContactSchema);
 
 const validate = (schema, body, next) => {
   const { error } = schema.validate(body);
@@ -35,22 +45,30 @@ const validate = (schema, body, next) => {
   next();
 };
 
-module.exports.contactValidator = (req, res, next) => {
-  const { error } = contactValidator.validate(req.body);
+module.exports.userRegistrationValidator = (req, res, next) => {
+  const { error } = registrationSchema.validate(req.body);
   if (error) {
-    return res.status(400).json({ message: 'missing required fields' });
+    return res.status(400).json({ message: 'Validation error', details: error.details });
   }
   next();
 };
 
 module.exports.contactUpdateValidator = (req, res, next) => {
-  const { error } = updateContact.validate(req.body);
+  const { error } = updateContactSchema.validate(req.body);
   if (!req.body || Object.keys(req.body).length === 0) {
-    return res.status(400).json({ message: 'missing fields' });
+    return res.status(400).json({ message: 'Missing fields' });
   }
   if (error) {
     const [{ message }] = error.details;
-    return res.status(400).json({ message: message });
+    return res.status(400).json({ message });
+  }
+  next();
+};
+
+module.exports.userValidateLogin = (req, res, next) => {
+  const { error } = loginSchema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: 'Validation error', details: error.details });
   }
   next();
 };

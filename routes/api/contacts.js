@@ -115,4 +115,6 @@ router.patch('/:contactId', validate.contactUpdateValidator, async (req, res, ne
   }
 });
 
+
+
 module.exports = router;

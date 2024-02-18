@@ -1,46 +1,28 @@
 const { User } = require('../models/users.schema');
-const authenticate = require('../middleware/authenticate');
 
-const signup = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-        const signupResult = await User.signup(email, password);
-        return signupResult;
+const signup = async (body) => {
+     try {
+    const { email, password } = body;
+    const newUser = new User({ email });
+    newUser.setPassword(password);
+    await newUser.save();
+    return newUser;
     } catch (error) {
      console.error('Error:', error.message);
     throw error;
     }
 };
 
-const login = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-        const loginResult = await User.login(email, password);
-        return loginResult;
+const login = async (email) => {
+  try {
+    const user = await User.findOne({ email });
+      return user;
     } catch (error) {
         console.error('Error:', error.message);
         throw error;
     }
 };
 
-const logout = async (user) => {
-  try {
-    await User.logout(req.user);
-    res.status(204).end();
-  } catch (error) {
-        console.error('Error:', error.message);
-        throw error;
-    }
-};
 
-const current = async (user) => {
-  try {
-    const currentUser = await User.current(req.user);
-    res.status(200).json(currentUser);
-  } catch (error) {
-        console.error('Error:', error.message);
-        throw error;
-    }
-};
 
-module.exports = { signup, login, logout, current };
+module.exports = { signup, login };

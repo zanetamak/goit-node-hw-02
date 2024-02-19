@@ -1,8 +1,9 @@
 const express = require('express');
 const jwt = require("jsonwebtoken");
 const validate = require('../api/validation');
-const { login, signup, logout, current } = require('../../controllers/user');
+const { login, signup } = require('../../controllers/user');
 const authenticateToken = require('../../middleware/authenticate');
+const e = require('express');
 
 const router = express.Router();
 
@@ -124,3 +125,4 @@ router.get('/current', authenticateToken, async (req, res, next) => {
 });
 
 module.exports = router;
+

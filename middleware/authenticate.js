@@ -6,7 +6,9 @@ const authenticateToken = async (req, res, next) => {
   const token = req.header('Authorization');
 
   if (!token) {
-    return res.status(401).json({ message: 'Not authorized' });
+    return res
+      .status(401)
+      .json({ message: 'Not authorized' });
   }
 
   try {
@@ -17,10 +19,14 @@ const authenticateToken = async (req, res, next) => {
       req.user = user;
       next();
     } else {
-      return res.status(401).json({ message: 'Not authorized' });
+      return res
+        .status(401)
+        .json({ message: 'Not authorized' });
     }
   } catch (error) {
-    return res.status(401).json({ message: 'Not authorized' });
+    return res
+      .status(401)
+      .json({ message: 'Not authorized' });
   }
 };
 

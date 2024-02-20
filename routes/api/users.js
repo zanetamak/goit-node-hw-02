@@ -3,22 +3,18 @@ const jwt = require("jsonwebtoken");
 const validate = require('../api/validation');
 const { login, signup } = require('../../controllers/user');
 const authenticateToken = require('../../middleware/authenticate');
-const e = require('express');
 
 const router = express.Router();
 
-router.post("/signup", authenticateToken, async (req, res, next) => {
+router.post("/signup", async (req, res, next) => {
   try {
     const { email, password, subscription } = req.body;
 
-    const { error } = validate.userRegistrationValidator.validate({
-      email,
-      password,
-    });
-    if (error) {
+    const signUpByUser = userRegistrationValidator.validate({ email, password });
+    if (SignUpByUser.error) {
       return res
         .status(400)
-        .json({ message: error.details[0].message });
+        .json({ message: signUpByUser.error.details[0].message });
     }
 
     const existingUser = await User.findOne({ email });
@@ -40,15 +36,15 @@ router.post("/signup", authenticateToken, async (req, res, next) => {
   }
 });
 
-router.post("/login", authenticateToken, async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const { error } = userValidateLogin.validate({ email, password });
-    if (error) {
+    const loginByUser = userValidateLogin.validate({ email, password });
+    if (loginByUser.error) {
       return res
         .status(400)
-        .json({ message: error.details[0].message });
+        .json({ message: loginByUser.error.details[0].message });
     }
 
     const user = await login(email, password);

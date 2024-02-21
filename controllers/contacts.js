@@ -5,7 +5,7 @@ const listContacts = async () => {
     const contacts = await Contact.find();
     return contacts;
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error);
     throw error;
   }
 };

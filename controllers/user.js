@@ -8,7 +8,7 @@ const signup = async (body) => {
     await newUser.save();
     return newUser;
     } catch (error) {
-     console.error('Error:', error.message);
+     console.error('Error:', error);
     throw error;
     }
 };
@@ -18,7 +18,7 @@ const login = async (email) => {
     const user = await User.findOne({ email });
       return user;
     } catch (error) {
-        console.error('Error:', error.message);
+        console.error('Error:', error);
         throw error;
     }
 };

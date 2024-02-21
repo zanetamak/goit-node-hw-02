@@ -1,6 +1,6 @@
 const express = require('express');
 const jwt = require("jsonwebtoken");
-const validate = require('../api/validation');
+const { userValidateLogin, userRegistrationValidator } = require('../api/validation');
 const { login, signup } = require('../../controllers/user');
 const authenticateToken = require('../../middleware/authenticate');
 
@@ -11,7 +11,7 @@ router.post("/signup", async (req, res, next) => {
     const { email, password, subscription } = req.body;
 
     const signUpByUser = userRegistrationValidator.validate({ email, password });
-    if (SignUpByUser.error) {
+    if (signUpByUser.error) {
       return res
         .status(400)
         .json({ message: signUpByUser.error.details[0].message });

@@ -14,7 +14,8 @@ const router = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const contacts = await listContacts();
+    const ownerId = req.user._id;
+    const contacts = await listContacts(ownerId);
     res
       .status(200)
       .json({ status: 'success', code: 200, data: { contacts } });
@@ -26,12 +27,13 @@ router.get('/', async (req, res, next) => {
 router.get('/:contactId', async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await getContactById(contactId);
+    const ownerId = req.user._id;
+    const contact = await getContactById(contactId, ownerId);
     if (contact) {
       return res
         .status(200)
         .json({ status: 'success', code: 200, data: { contact } });
-    } else {
+      
       return res
         .status(404)
         .json({ status: 'error', code: 404, message: 'Not found' });
@@ -43,7 +45,8 @@ router.get('/:contactId', async (req, res, next) => {
 
 router.post('/', validate.contactUpdateValidator, async (req, res, next) => {
   try {
-    const newContact = await addContact(req.body);
+    const ownerId = req.user._id;
+    const newContact = await addContact(...req.body, ownerId);
     res
       .status(201)
       .json({ status: 'success', code: 201, data: { newContact } });
@@ -55,12 +58,13 @@ router.post('/', validate.contactUpdateValidator, async (req, res, next) => {
 router.delete('/:contactId', async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contact = await removeContact(contactId);
+    const ownerId = req.user._id;
+    const contact = await removeContact(contactId, ownerId);
     if (contact) {
       return res
         .status(200)
         .json({ status: 'success', code: 200, message: 'Contact deleted' });
-    } else {
+   
       return res
         .status(404)
         .json({ status: 'error', code: 404, message: 'Not found' });
@@ -73,7 +77,8 @@ router.delete('/:contactId', async (req, res, next) => {
 router.put('/:contactId', validate.contactUpdateValidator, async (req, res, next) => {
   try {
     const { contactId } = req.params;
-    const contactToEdit = await updateContact(contactId, req.body);
+    const ownerId = req.user._id;
+    const contactToEdit = await updateContact(contactId, req.body, ownerId);
     if (contactToEdit) {
       return res.json({
         status: 'success',
@@ -99,8 +104,8 @@ router.patch('/:contactId', validate.contactUpdateValidator, async (req, res, ne
         .status(400)
         .json({ message: 'Missing field "favorite"' });
     }
-
-    const updatedContact = await updateStatusContact(contactId, { favorite });
+    const ownerId = req.user._id;
+    const updatedContact = await updateStatusContact(contactId, { favorite }, ownerId);
 
     if (!updatedContact) {
       return res

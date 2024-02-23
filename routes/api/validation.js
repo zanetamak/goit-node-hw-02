@@ -23,6 +23,22 @@ const contactValidator = Joi.object({
 
 const updateContact = Joi.object(baseContactSchema);
 
+const userRegistrationValidator = Joi.object({
+  email: Joi.string().email({
+    minDomainSegments: 2,
+    tlds: ['com', 'pl', 'net'],
+  }).required(),
+  password: Joi.string().min(6).required(),
+});
+
+const userValidateLogin = Joi.object({
+  email: Joi.string().email({
+    minDomainSegments: 2,
+    tlds: ['com', 'pl', 'net'],
+  }).required(),
+  password: Joi.string().min(6).required(),
+});
+
 const validate = (schema, body, next) => {
   const { error } = schema.validate(body);
   if (error) {
@@ -51,6 +67,24 @@ module.exports.contactUpdateValidator = (req, res, next) => {
   if (error) {
     const [{ message }] = error.details;
     return res.status(400).json({ message: message });
+  }
+  next();
+};
+
+module.exports.userRegistrationValidator = (req, res, next) => {
+  const { error } = userRegistrationValidator.validate(req.body);
+  if (error) {
+    const [{ message }] = error.details;
+    return res.status(400).json({ error: 'invalid_user_data', message: message });
+  }
+  next();
+};
+
+module.exports.userValidateLogin = (req, res, next) => {
+  const { error } = userValidateLogin.validate(req.body);
+  if (error) {
+    const [{ message }] = error.details;
+    return res.status(400).json({ error: 'invalid_login_data', message: message });
   }
   next();
 };

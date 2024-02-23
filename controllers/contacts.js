@@ -1,8 +1,8 @@
-const { Contact } = require('../contacts.schema');
+const { Contact } = require('../models/contacts.schema');
 
-const listContacts = async () => {
+const listContacts = async (ownerId) => {
   try {
-    const contacts = await Contact.find();
+    const contacts = await Contact.find({owner: ownerId });
     return contacts;
   } catch (error) {
     console.error('Error:', error);
@@ -10,59 +10,59 @@ const listContacts = async () => {
   }
 };
 
-const getContactById = async (contactId) => {
+const getContactById = async (contactId, ownerId) => {
   try {
-    const detectedContact = await Contact.findOne({ _id: contactId });
+    const detectedContact = await Contact.findOne({ _id: contactId, owner: ownerId });
     return detectedContact;
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error);
     throw error;
   }
 };
-const removeContact = async (contactId) => {
+const removeContact = async (contactId, ownerId) => {
   try {
-    const removedContact = await Contact.findByIdAndDelete({ _id: contactId });
+    const removedContact = await Contact.findByIdAndDelete({ _id: contactId, owner: ownerId});
     return removedContact;
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error);
     throw error;
   }
 };
 
-const addContact = async (body) => {
+const addContact = async (body, ownerId) => {
   try {
-    const newContact = await Contact.create(body);
+    const newContact = await Contact.create({ ...body, owner: ownerId });
     return newContact;
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error);
     throw error;
   }
 };
 
-const updateContact = async (contactId, body) => {
+const updateContact = async (contactId, body, ownerId) => {
   try {
     const updatedContact = await Contact.findByIdAndUpdate(
-      { _id: contactId },
+      { _id: contactId, owner: ownerId },
       body,
       { new: true, runValidators: true }
     );
     return updatedContact;
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error);
     throw error;
   }
 };
 
-const updateStatusContact = async (contactId, body) => {
+const updateStatusContact = async (contactId, body, ownerId) => {
   try {
     const updatedContact = await Contact.findByIdAndUpdate(
-      { _id: contactId },
+      { _id: contactId, owner: ownerId },
       { favorite: body.favorite },
       { new: true }
     );
     return updatedContact;
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error:', error);
     throw error;
   }
 };

@@ -29,7 +29,7 @@ router.get('/:contactId', async (req, res, next) => {
     const { contactId } = req.params;
     const ownerId = req.user._id;
     const contact = await getContactById(contactId, ownerId);
-    if (contact) {
+    if (contact && contact.owner.toString() === ownerId.toString()) {
       return res
         .status(200)
         .json({ status: 'success', code: 200, data: { contact } });

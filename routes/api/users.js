@@ -38,16 +38,16 @@ router.post("/signup", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email } = req.body;
 
-    const loginByUser = userValidateLogin.validate({ email, password });
+    const loginByUser = userValidateLogin.validate({ email });
     if (loginByUser.error) {
       return res
         .status(400)
         .json({ message: loginByUser.error.details[0].message });
     }
 
-    const user = await login(email, password);
+    const user = await login(email);
 
     if (!user) {
       return res

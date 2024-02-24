@@ -1,8 +1,10 @@
 const express = require('express');
 const jwt = require("jsonwebtoken");
+const gravatar = require('gravatar')
 const { userValidateLogin, userRegistrationValidator } = require('../api/validation');
 const { login, signup } = require('../../controllers/user');
 const authenticateToken = require('../../middleware/authenticate');
+
 
 const router = express.Router();
 
@@ -24,7 +26,9 @@ router.post("/signup", async (req, res, next) => {
         .json({ message: "Email in use" });
     }
 
-    const newUser = await signup({ email, password, subscription });
+    const avatarURL = gravatar.url(email);
+
+    const newUser = await signup({ email, password, subscription, avatarURL });
     return res
       .status(201)
       .json({
@@ -119,6 +123,13 @@ router.get('/current', authenticateToken, async (req, res, next) => {
     next(error);
   }
 });
+
+// router.patch('/avatars', authenticateToken, ulopad.single('avatar'), async (req, res, next) => {
+//   try {
+//     const user = req.user;
+//     if
+//   }
+// })
 
 module.exports = router;
 

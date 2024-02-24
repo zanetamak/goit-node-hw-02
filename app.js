@@ -1,6 +1,7 @@
 const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
+const path = require('path')
 
 const authenticateToken = require('./middleware/authenticate');
 const contactsRouter = require('./routes/api/contacts');
@@ -16,6 +17,8 @@ app.use(express.json());
 
 app.use('/api/contacts', authenticateToken, contactsRouter);
 app.use('/users', usersRouter);
+
+app.use("/avatars", express.static(path.join(__dirname, "public", "avatars")));
 
 app.use((req, res) => {
   res

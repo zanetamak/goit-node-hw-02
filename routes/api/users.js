@@ -1,9 +1,10 @@
 const express = require('express');
 const jwt = require("jsonwebtoken");
-const gravatar = require('gravatar')
+const gravatar = require('gravatar');
 const { userValidateLogin, userRegistrationValidator } = require('../api/validation');
 const { login, signup } = require('../../controllers/user');
 const authenticateToken = require('../../middleware/authenticate');
+const upload = require('../../middleware/updateAvatar')
 
 
 const router = express.Router();
@@ -26,13 +27,14 @@ router.post("/signup", async (req, res, next) => {
         .json({ message: "Email in use" });
     }
 
-    const avatarURL = gravatar.url(email);
+const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'identicon' });
+
 
     const newUser = await signup({ email, password, subscription, avatarURL });
     return res
       .status(201)
       .json({
-      user: { email: newUser.email, subscription: newUser.subscription },
+      user: { email: newUser.email, subscription: newUser.subscription, avatarURL: newUser.avatarURL },
       message: "User registered successfully",
     });
   } catch (error) {
@@ -124,12 +126,22 @@ router.get('/current', authenticateToken, async (req, res, next) => {
   }
 });
 
-// router.patch('/avatars', authenticateToken, ulopad.single('avatar'), async (req, res, next) => {
-//   try {
-//     const user = req.user;
-//     if
-//   }
-// })
+router.patch("/avatars", upload.single('avatar'), async (req, res, next) => {
+  try {
+    const { authorization } = req.headers;
+    if (authorization !== 'Bearer {{token}}') {
+      return res
+        .status(401)
+        .json({ message: 'Not authorized' });
+    }
+    const updatedAvatar = await userController.updateAvatarUser(req.file, req.body.userId);
+    res
+      .status(200)
+      .json(updatedAvatar);
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;
 

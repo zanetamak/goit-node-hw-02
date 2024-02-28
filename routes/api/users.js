@@ -126,14 +126,8 @@ router.get('/current', authenticateToken, async (req, res, next) => {
   }
 });
 
-router.patch("/avatars", upload.single('avatar'), async (req, res, next) => {
+router.patch("/avatars", auth, upload.single('avatar'), async (req, res, next) => {
   try {
-    const { authorization } = req.headers;
-    if (authorization !== 'Bearer {{token}}') {
-      return res
-        .status(401)
-        .json({ message: 'Not authorized' });
-    }
     const updatedAvatar = await userController.updateAvatarUser(req.file, req.body.userId);
     res
       .status(200)

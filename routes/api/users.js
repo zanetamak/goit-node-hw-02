@@ -1,8 +1,11 @@
 const express = require('express');
 const jwt = require("jsonwebtoken");
+const gravatar = require('gravatar');
 const { userValidateLogin, userRegistrationValidator } = require('../api/validation');
 const { login, signup } = require('../../controllers/user');
 const authenticateToken = require('../../middleware/authenticate');
+const upload = require('../../middleware/updateAvatar')
+
 
 const router = express.Router();
 
@@ -24,11 +27,14 @@ router.post("/signup", async (req, res, next) => {
         .json({ message: "Email in use" });
     }
 
-    const newUser = await signup({ email, password, subscription });
+const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'identicon' });
+
+
+    const newUser = await signup({ email, password, subscription, avatarURL });
     return res
       .status(201)
       .json({
-      user: { email: newUser.email, subscription: newUser.subscription },
+      user: { email: newUser.email, subscription: newUser.subscription, avatarURL: newUser.avatarURL },
       message: "User registered successfully",
     });
   } catch (error) {
@@ -38,16 +44,16 @@ router.post("/signup", async (req, res, next) => {
 
 router.post("/login", async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email } = req.body;
 
-    const loginByUser = userValidateLogin.validate({ email, password });
+    const loginByUser = userValidateLogin.validate({ email });
     if (loginByUser.error) {
       return res
         .status(400)
         .json({ message: loginByUser.error.details[0].message });
     }
 
-    const user = await login(email, password);
+    const user = await login(email);
 
     if (!user) {
       return res
@@ -115,6 +121,23 @@ router.get('/current', authenticateToken, async (req, res, next) => {
       email: currentUser.email,
       subscription: currentUser.subscription,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/avatars", upload.single('avatar'), async (req, res, next) => {
+  try {
+    const { authorization } = req.headers;
+    if (authorization !== 'Bearer {{token}}') {
+      return res
+        .status(401)
+        .json({ message: 'Not authorized' });
+    }
+    const updatedAvatar = await userController.updateAvatarUser(req.file, req.body.userId);
+    res
+      .status(200)
+      .json(updatedAvatar);
   } catch (error) {
     next(error);
   }

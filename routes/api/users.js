@@ -6,22 +6,9 @@ const { login, signup } = require('../../controllers/user');
 const authenticateToken = require('../../middleware/authenticate');
 const upload = require('../../middleware/updateAvatar');
 const { v4: uuidv4 } = require("uuid");
-const sgMail = require('@sendgrid/mail');
-
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const sendVerificationEmail = require("../../nodemailer/emailService");
 
 const router = express.Router();
-
-const sendVerificationEmail = async (email, verificationToken) => {
-  const msg = {
-    to: email,
-    from: 'zaneta.zawislak@gmail.com',
-    subject: 'Email Verification',
-    text: `Click the following link to verify your email: ${process.env.BASE_URL}/users/verify/${verificationToken}`,
-  };
-
-  await sgMail.send(msg)
-};
 
 router.post("/signup", async (req, res, next) => {
   try {
@@ -129,7 +116,7 @@ router.get('/current', authenticateToken, async (req, res, next) => {
   }
 });
 
-router.patch("/avatars", auth, upload.single('avatar'), async (req, res, next) => {
+router.patch("/avatars", authenticateToken, upload.single('avatar'), async (req, res, next) => {
   try {
     const updatedAvatar = await userController.updateAvatarUser(req.file, req.body.userId);
     res
@@ -164,6 +151,39 @@ router.patch("/avatars", auth, upload.single('avatar'), async (req, res, next) =
     return res
       .status(500)
       .json({ message: 'Server error' });
+  }
+  });
+
+router.post("/verify", async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const { error } = emailSchema.validate({ email });
+
+    if (error) {
+      throw new Error(error.details[0].message);
+    }
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new Error("missing required field email");
+    }
+
+    if (user.verify) {
+      throw new Error("Verification has already been passed");
+    }
+
+    await sendVerificationEmail({
+      email,
+      verificationToken: user.verificationToken,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Verification email sent" });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: error.message });
   }
 });
 

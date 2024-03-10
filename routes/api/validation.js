@@ -14,28 +14,28 @@ const baseContactSchema = {
   favorite: Joi.boolean(),
 };
 
+const emailSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Invalid email format",
+  }),
+});
+
 const contactValidator = Joi.object({
   ...baseContactSchema,
   name: baseContactSchema.name.required(),
-  email: baseContactSchema.email.required(),
+  email: emailSchema.required(),
   phone: baseContactSchema.phone.required(),
 });
 
 const updateContact = Joi.object(baseContactSchema);
 
 const userRegistrationValidator = Joi.object({
-  email: Joi.string().email({
-    minDomainSegments: 2,
-    tlds: ['com', 'pl', 'net'],
-  }).required(),
+  email: emailSchema.required(),
   password: Joi.string().min(6).required(),
 });
 
 const userValidateLogin = Joi.object({
-  email: Joi.string().email({
-    minDomainSegments: 2,
-    tlds: ['com', 'pl', 'net'],
-  }).required(),
+  email: emailSchema.required(),
   password: Joi.string().min(6).required(),
 });
 
@@ -88,3 +88,5 @@ module.exports.userValidateLogin = (req, res, next) => {
   }
   next();
 };
+
+module.exports.emailSchema = emailSchema;

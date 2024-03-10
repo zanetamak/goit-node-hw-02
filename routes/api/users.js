@@ -165,7 +165,7 @@ router.post("/verify", async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      throw new Error("missing required field email");
+      throw new Error("User not found"); 
     }
 
     if (user.verify) {

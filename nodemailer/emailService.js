@@ -10,12 +10,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-  const emailOptions = {
-    from: "zaneta.zawislak@gmail.com",
-    to: "zaneta.zawislak@gmail.com",
-    subject: "Please verify your email",
-    text: `Verify your email: http://localhost:3000/users/verify/${verificationToken}`
-  };
+const emailOptions = {
+  from: "zaneta.zawislak@gmail.com",
+  to: "zaneta.zawislak@gmail.com",
+  subject: "Please verify your email",
+  html: `<p>Click the following link to verify your email:</p>
+         <a href="http://localhost:3000/users/verify/${verificationToken}">
+           Verify Email
+         </a>`
+};
 
   try {
     const info = await transporter.sendMail(emailOptions);
